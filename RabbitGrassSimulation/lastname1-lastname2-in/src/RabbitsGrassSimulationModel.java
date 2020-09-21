@@ -31,7 +31,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 {		
 	
 		private static final int GRIDSIZE = 20;
-		private static final int NUMINITRABBITS = 1;
+		private static final int NUMINITRABBITS = 5;
 		private static final int NUMINITGRASS = 50;
 		private static final int GRASSGROWTHRATE = 30;
 		private static final int BIRTHTHRESHOLD = 15;
@@ -265,9 +265,9 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 			System.out.println("Running BuildDisplay");
 			ColorMap colorMap = new ColorMap();
 
-		    for(int i = 1; i < 25; i++)
+		    for(int i = 1; i < 16; i++)
 		    {
-		    	colorMap.mapColor(i, new Color((int)(i * 8 + 127), 0, 0));
+		    	colorMap.mapColor(i, new Color(0, (int)(i * 8 + 127), 0));
 			}
 			colorMap.mapColor(0, Color.white);
 

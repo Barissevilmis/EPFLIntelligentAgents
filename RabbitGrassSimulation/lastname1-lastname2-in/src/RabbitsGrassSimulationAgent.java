@@ -1,4 +1,7 @@
 import java.awt.Color;
+import java.awt.Image;
+import java.awt.Toolkit;
+
 import uchicago.src.sim.gui.Drawable;
 import uchicago.src.sim.gui.SimGraphics;
 
@@ -20,6 +23,8 @@ public class RabbitsGrassSimulationAgent implements Drawable
 	private int IDInd;
 	private int gridSize;
 	
+	private static Image rabbit = Toolkit.getDefaultToolkit().createImage("rabbit.png");
+	
 	private RabbitsGrassSimulationSpace rgsSpace;
 	
 	public RabbitsGrassSimulationAgent(int initEnergy, int gridS)
@@ -36,14 +41,8 @@ public class RabbitsGrassSimulationAgent implements Drawable
 	public void draw(SimGraphics arg0) 
 	{	
 		//COLOR OF AGENTS TURN FROM RED TO GREEN IN CASE OF LOW ENERGY
-	    if(energy >= 15)
-	        arg0.drawFastRoundRect(Color.green);
-	    else if(energy >= 10 && energy < 15)
-	        arg0.drawFastRoundRect(Color.yellow);
-	    else if(energy >= 5 && energy < 10)
-	    	arg0.drawFastRoundRect(Color.orange);
-	    else
-	    	arg0.drawFastRoundRect(Color.red);
+		arg0.drawFastRect(Color.yellow);
+		arg0.drawImageToFit(rabbit);
 		
 	}
 
