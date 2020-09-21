@@ -218,7 +218,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 		        	  rbt.alterEnergy();
 		          }
 		          
-		          int deadRabbitCount = removeDeadRabbits();
+		          rabbitReproduce();
+		          removeDeadRabbits();
 		          
 		          displaySurf.updateDisplay();
 		        }
@@ -312,6 +313,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 		    	if(rbt.getRemainingEnergy() >= birthThreshold)
 		    	{
 		    		addNewRabbit();
+		    		rbt.decreaseEnergy(birthThreshold);
 		    	}
 		    }
 		}

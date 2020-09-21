@@ -106,6 +106,11 @@ public class RabbitsGrassSimulationAgent implements Drawable
 		energy -= 1;
 	}
 	
+	public void decreaseEnergy(int amount)
+	{
+		energy -= amount;
+	}
+	
 	private boolean tryMove(int xx, int yy)
 	{
 		return rgsSpace.moveRabbit(x, y, xx, yy);
