@@ -1,4 +1,3 @@
-import java.awt.Color;
 import java.awt.Image;
 import java.awt.Toolkit;
 
@@ -24,6 +23,7 @@ public class RabbitsGrassSimulationAgent implements Drawable
 	private int gridSize;
 	
 	private static Image rabbit = Toolkit.getDefaultToolkit().createImage("rabbit.png");
+//	private static Image rabbit = Toolkit.getDefaultToolkit().createImage(RabbitsGrassSimulationAgent.class.getResource("/rabbit.png"));
 	
 	private RabbitsGrassSimulationSpace rgsSpace;
 	
@@ -33,7 +33,6 @@ public class RabbitsGrassSimulationAgent implements Drawable
 		energy = initEnergy;
 		gridSize = gridS;
 		
-		
 		IDStat += 1;
 		IDInd = IDStat;
 	}
@@ -41,7 +40,7 @@ public class RabbitsGrassSimulationAgent implements Drawable
 	public void draw(SimGraphics arg0) 
 	{	
 		//COLOR OF AGENTS TURN FROM RED TO GREEN IN CASE OF LOW ENERGY
-		arg0.drawFastRect(Color.yellow);
+//		arg0.drawFastRect(Color.yellow);
 		arg0.drawImageToFit(rabbit);
 		
 	}
@@ -64,7 +63,6 @@ public class RabbitsGrassSimulationAgent implements Drawable
 	
 	public void alterEnergy()
 	{
-		//TODO: IN CASE OF COLLISION: TRY AGAIN OR REMAIN(IF TRY AGAIN SET ATTEMPT: CHANGE IF TO WHILE)?
 		//int attempt = 0;
 		//int maxAttempt = 6;
 		int dir = (int) (Math.random() * 4) + 1;
@@ -95,11 +93,11 @@ public class RabbitsGrassSimulationAgent implements Drawable
 		
 		if(tryMove(xx,yy))
 		{
-			System.out.println("Rabbit-"+IDInd+" did move to location ("+ getX()+","+getY()+").");
+//			System.out.println("Rabbit-"+IDInd+" did move to location ("+ getX()+","+getY()+").");
 		}
 		else
 		{
-			System.out.println("Rabbit-"+IDInd+" could not move from location ("+ getX()+","+getY()+").");
+//			System.out.println("Rabbit-"+IDInd+" could not move from location ("+ getX()+","+getY()+").");
 		}
 		energy += rgsSpace.eatGrass(x,y);
 		energy -= 1;
@@ -123,13 +121,11 @@ public class RabbitsGrassSimulationAgent implements Drawable
 
 	public int getX() 
 	{
-		// TODO Auto-generated method stub
 		return x;
 	}
 
 	public int getY() 
 	{
-		// TODO Auto-generated method stub
 		return y;
 	}
 	

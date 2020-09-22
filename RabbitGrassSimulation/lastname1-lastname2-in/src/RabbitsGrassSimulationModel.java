@@ -31,11 +31,11 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 {		
 	
 		private static final int GRIDSIZE = 20;
-		private static final int NUMINITRABBITS = 5;
-		private static final int NUMINITGRASS = 50;
-		private static final int GRASSGROWTHRATE = 30;
-		private static final int BIRTHTHRESHOLD = 15;
-		private static final int INITIALRABBITENERGY = 10;
+		private static final int NUMINITRABBITS = 20;
+		private static final int NUMINITGRASS = 100;
+		private static final int GRASSGROWTHRATE = 50;
+		private static final int BIRTHTHRESHOLD = 30;
+		private static final int INITIALRABBITENERGY = 15;
 			
 		private int gridSize = GRIDSIZE;
 		private int numInitRabbits = NUMINITRABBITS;
@@ -50,11 +50,9 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 		
 		private DisplaySurface displaySurf;
 		
-		private ArrayList rabbitList;
+		private ArrayList<RabbitsGrassSimulationAgent> rabbitList;
 		
 		private OpenSequenceGraph amountOfGrassInSpace;
-		
-		private OpenHistogram rabbitEnergyDistribution;
 
 		class grassInSpace implements DataSource, Sequence 
 		{
@@ -70,14 +68,15 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 		    }
 		}
 		
-		class rabbitEnergy implements BinDataSource
-		{
-		    public double getBinValue(Object obj) 
-		    {
-		    	RabbitsGrassSimulationAgent rbt = (RabbitsGrassSimulationAgent)obj;
-		    	return (double)rbt.getRemainingEnergy();
-		    }
-		  }
+		class rabbitsInSpace implements DataSource, Sequence {
+			public Object execute() {
+				return new Double(getSValue());
+			}
+			
+			public double getSValue() {
+				return (double) countLivingRabbits();
+			}
+		}
 
 		public static void main(String[] args) 
 		{
@@ -102,7 +101,6 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 		    
 		    displaySurf.display();
 		    amountOfGrassInSpace.display();
-		    rabbitEnergyDistribution.display();
 		}
 		
 		//REQ 3
@@ -119,7 +117,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 			descriptors.put("NumInitRabbits", rdNumInitRabbits);
 			
 			RangePropertyDescriptor rdNumInitGrass = new RangePropertyDescriptor(
-					"NumInitGrass", 0, 100, 10);
+					"NumInitGrass", 0, 200, 20);
 			descriptors.put("NumInitGrass", rdNumInitGrass);
 			
 			RangePropertyDescriptor rdGrassGrowthRate = new RangePropertyDescriptor(
@@ -155,7 +153,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 			System.out.println("Running setup");
 			
 			rgsSpace = null;
-			rabbitList = new ArrayList();
+			rabbitList = new ArrayList<RabbitsGrassSimulationAgent>();
 			schedule = new Schedule(1);
 			
 			if (displaySurf != null)
@@ -169,17 +167,10 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 		        amountOfGrassInSpace.dispose();
 		    }
 		    amountOfGrassInSpace = null;
-		    
-		    if (rabbitEnergyDistribution != null)
-		    {
-		    	rabbitEnergyDistribution.dispose();
-		    }
-		    rabbitEnergyDistribution = null;
 
 		    displaySurf = new DisplaySurface(this, "Rabbit Grass Simulation Model Window 1");
-		    amountOfGrassInSpace = new OpenSequenceGraph("Amount Of Grass In Space",this);
-		    rabbitEnergyDistribution = new OpenHistogram("Rabbit Energy", 8, 0);
-
+		    amountOfGrassInSpace = new OpenSequenceGraph("Rabbit and Grass Populations",this);
+	
 			registerDisplaySurface("Rabbit Grass Simulation Model Window 1", displaySurf);
 			this.registerMediaProducer("Plot", amountOfGrassInSpace);
 
@@ -189,7 +180,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 		{
 		    System.out.println("Running BuildModel");
 		    rgsSpace = new RabbitsGrassSimulationSpace(gridSize);
-		    rgsSpace.grassGrowth(grassGrowthRate);
+		    rgsSpace.grassGrowth(numInitGrass);
 		    
 		    for(int i = 0; i < numInitRabbits; i++)
 		    {
@@ -210,16 +201,17 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 		    class RabbitsGrassSimulationStep extends BasicAction 
 		    {
 		        public void execute() {
+		          rgsSpace.grassGrowth(grassGrowthRate);
+		          
 		          SimUtilities.shuffle(rabbitList);
 		          for(int i = 0; i < rabbitList.size(); i++)
 		          {
-		        	       
 		        	  RabbitsGrassSimulationAgent rbt = (RabbitsGrassSimulationAgent)rabbitList.get(i);
 		        	  rbt.alterEnergy();
 		          }
 		          
-		          rabbitReproduce();
 		          removeDeadRabbits();
+		          rabbitReproduce();
 		          
 		          displaySurf.updateDisplay();
 		        }
@@ -247,17 +239,6 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 		    }
 
 		    schedule.scheduleActionAtInterval(5, new RabbitsGrassSimulationUpdateGrassInSpace());
-		    
-		    class RabbitsGrassSimulationUpdateRabbitEnergy extends BasicAction 
-		    {
-		        public void execute()
-		        {
-		          rabbitEnergyDistribution.step();
-		        }
-		    }
-
-		    schedule.scheduleActionAtInterval(10, new RabbitsGrassSimulationUpdateRabbitEnergy());	    
-
 		}
 
 		public void buildDisplay()
@@ -267,7 +248,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 
 		    for(int i = 1; i < 16; i++)
 		    {
-		    	colorMap.mapColor(i, new Color(0, (int)(i * 8 + 127), 0));
+		    	colorMap.mapColor(i, new Color(0, 255-i*8, 0));
 			}
 			colorMap.mapColor(0, Color.white);
 
@@ -278,7 +259,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 			displaySurf.addDisplayableProbeable(displayGrass, "Grass");
 			displaySurf.addDisplayableProbeable(displayRabbits, "Rabbits");
 
-			amountOfGrassInSpace.addSequence("Grass In Space", new grassInSpace());
+			amountOfGrassInSpace.addSequence("Grass", new grassInSpace());
+			amountOfGrassInSpace.addSequence("Rabbits", new rabbitsInSpace());
 		}
 		
 		private void addNewRabbit()
@@ -288,34 +270,35 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 			rgsSpace.addRabbit(r, 10);
 		}
 		
-		private int removeDeadRabbits()
+		private void removeDeadRabbits()
 		{
-			int deadCount = 0;
-		    for(int i = 0; i < rabbitList.size() ; i++)
+		    for(int i = rabbitList.size() - 1; i >= 0; i--)
 		    {
 		    	RabbitsGrassSimulationAgent rbt = (RabbitsGrassSimulationAgent)rabbitList.get(i);
 		    	if(rbt.getRemainingEnergy() < 1)
 		    	{
 			        rgsSpace.removeRabbit(rbt.getX(), rbt.getY());
 			        rabbitList.remove(i);
-			        deadCount++;
 		    	}
 		    }
-		    return deadCount;
 		}
 		
 		private void rabbitReproduce()
 		{
-			//TODO REPRODUCTION RATE & ENERGY DECREASE AMOUNT
+			int babyRabbits = 0;
+			// REPRODUCTION RATE & ENERGY DECREASE AMOUNT
 			for(int i = 0; i < rabbitList.size() ; i++)
 		    {
 		    	RabbitsGrassSimulationAgent rbt = (RabbitsGrassSimulationAgent)rabbitList.get(i);
 		    	if(rbt.getRemainingEnergy() >= birthThreshold)
 		    	{
-		    		addNewRabbit();
-		    		rbt.decreaseEnergy(birthThreshold);
+		    		babyRabbits++;
+		    		rbt.decreaseEnergy(birthThreshold / 2);
 		    	}
 		    }
+			for (int i = 0; i < babyRabbits; i++) {
+				addNewRabbit();
+			}
 		}
 
 		

@@ -25,17 +25,15 @@ public class RabbitsGrassSimulationSpace
 	
 	 public void grassGrowth(int grow)
 	 {
-		 // Randomly place money in moneySpace
+		 // Randomly place grass in grassSpace
 		 for(int i = 0; i < grow; i++)
 		 {
-
 			 int x = (int)(Math.random()*(grassSpace.getSizeX()));
 			 int y = (int)(Math.random()*(grassSpace.getSizeY()));
 			 
 			 //Increase
 		     int currVal = getGrass(x,y);
 		     grassSpace.putObjectAt(x,y,new Integer(currVal + 1));
-
 		 }
 	
 	 }
