@@ -71,10 +71,10 @@ public class RabbitsGrassSimulationSpace
 		 return grassSpace;
 	 }
 	 
-	  public Object2DGrid getCurrentRabbitSpace()
-	  {
-		    return rabbitSpace;
-		  }
+	 public Object2DGrid getCurrentRabbitSpace()
+	 {
+		 return rabbitSpace;
+	 }
 
 	 public boolean isBlockFull(int x, int y)
 	 {	 

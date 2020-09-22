@@ -91,14 +91,7 @@ public class RabbitsGrassSimulationAgent implements Drawable
 		int xx = (x + dirX + gridSize) % gridSize;
 		int yy = (y + dirY + gridSize) % gridSize;
 		
-		if(tryMove(xx,yy))
-		{
-//			System.out.println("Rabbit-"+IDInd+" did move to location ("+ getX()+","+getY()+").");
-		}
-		else
-		{
-//			System.out.println("Rabbit-"+IDInd+" could not move from location ("+ getX()+","+getY()+").");
-		}
+		tryMove(xx,yy);
 		energy += rgsSpace.eatGrass(x,y);
 		energy -= 1;
 	}

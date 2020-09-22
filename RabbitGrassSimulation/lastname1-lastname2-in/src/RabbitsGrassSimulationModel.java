@@ -35,14 +35,13 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 		private static final int NUMINITGRASS = 100;
 		private static final int GRASSGROWTHRATE = 50;
 		private static final int BIRTHTHRESHOLD = 30;
-		private static final int INITIALRABBITENERGY = 15;
 			
 		private int gridSize = GRIDSIZE;
 		private int numInitRabbits = NUMINITRABBITS;
 		private int numInitGrass = NUMINITGRASS;
 		private int grassGrowthRate = GRASSGROWTHRATE;
 		private int birthThreshold = BIRTHTHRESHOLD;
-		private int initialRabbitEnergy = INITIALRABBITENERGY;
+		private int initialRabbitEnergy = 15;
 		
 		private RabbitsGrassSimulationSpace rgsSpace;
 		
@@ -128,11 +127,8 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 					"BirthThreshold", 0, 50, 10);
 			descriptors.put("BirthThreshold", rdBirthThreshold);
 			
-			RangePropertyDescriptor rdInitialRabbitEnergy = new RangePropertyDescriptor(
-					"InitialRabbitEnergy", 0, 50, 10);
-			descriptors.put("InitialRabbitEnergy", rdInitialRabbitEnergy);
 			
-			String[] params = { "GridSize", "NumInitRabbits", "NumInitGrass", "GrassGrowthRate", "BirthThreshold", "InitialRabbitEnergy"};
+			String[] params = { "GridSize", "NumInitRabbits", "NumInitGrass", "GrassGrowthRate", "BirthThreshold"};
 			return params;
 		}
 		
@@ -266,8 +262,10 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 		private void addNewRabbit()
 		{
 			RabbitsGrassSimulationAgent r = new RabbitsGrassSimulationAgent(initialRabbitEnergy, gridSize);
-			rabbitList.add(r);
-			rgsSpace.addRabbit(r, 10);
+			if(rgsSpace.addRabbit(r, 10))
+			{
+				rabbitList.add(r);
+			}
 		}
 		
 		private void removeDeadRabbits()
@@ -293,10 +291,11 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 		    	if(rbt.getRemainingEnergy() >= birthThreshold)
 		    	{
 		    		babyRabbits++;
-		    		rbt.decreaseEnergy(birthThreshold / 2);
+		    		rbt.decreaseEnergy(rbt.getRemainingEnergy() / 2);
 		    	}
 		    }
-			for (int i = 0; i < babyRabbits; i++) {
+			for (int i = 0; i < babyRabbits; i++) 
+			{				
 				addNewRabbit();
 			}
 		}
@@ -342,6 +341,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 		{
 			return birthThreshold;
 		}
+
 		
 		public void setGridSize(int gs)
 		{
@@ -367,4 +367,5 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 		{
 			birthThreshold = bt;
 		}
+
 }
