@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Image;
 import java.awt.Toolkit;
 
@@ -22,8 +23,8 @@ public class RabbitsGrassSimulationAgent implements Drawable
 	private int IDInd;
 	private int gridSize;
 	
-	private static Image rabbit = Toolkit.getDefaultToolkit().createImage("rabbit.png");
-//	private static Image rabbit = Toolkit.getDefaultToolkit().createImage(RabbitsGrassSimulationAgent.class.getResource("/rabbit.png"));
+	//private static Image rabbit = Toolkit.getDefaultToolkit().createImage("rabbit.png");
+	private static Image rabbit = Toolkit.getDefaultToolkit().createImage(RabbitsGrassSimulationAgent.class.getResource("/rabbit.png"));
 	
 	private RabbitsGrassSimulationSpace rgsSpace;
 	
@@ -40,7 +41,7 @@ public class RabbitsGrassSimulationAgent implements Drawable
 	public void draw(SimGraphics arg0) 
 	{	
 		//COLOR OF AGENTS TURN FROM RED TO GREEN IN CASE OF LOW ENERGY
-//		arg0.drawFastRect(Color.yellow);
+		arg0.drawFastRect(Color.yellow);
 		arg0.drawImageToFit(rabbit);
 		
 	}

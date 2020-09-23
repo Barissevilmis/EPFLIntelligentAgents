@@ -73,7 +73,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 			}
 			
 			public double getSValue() {
-				return (double) countLivingRabbits();
+				return (double) 5*countLivingRabbits();
 			}
 		}
 
@@ -124,11 +124,11 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 			descriptors.put("GrassGrowthRate", rdGrassGrowthRate);
 			
 			RangePropertyDescriptor rdBirthThreshold = new RangePropertyDescriptor(
-					"BirthThreshold", 0, 50, 10);
+					"BirthThreshold", 0, 100, 10);
 			descriptors.put("BirthThreshold", rdBirthThreshold);
 			
 			
-			String[] params = { "GridSize", "NumInitRabbits", "NumInitGrass", "GrassGrowthRate", "BirthThreshold"};
+			String[] params = {"GridSize", "NumInitRabbits", "NumInitGrass", "GrassGrowthRate", "BirthThreshold"};
 			return params;
 		}
 		
@@ -256,7 +256,7 @@ public class RabbitsGrassSimulationModel extends SimModelImpl
 			displaySurf.addDisplayableProbeable(displayRabbits, "Rabbits");
 
 			amountOfGrassInSpace.addSequence("Grass", new grassInSpace());
-			amountOfGrassInSpace.addSequence("Rabbits", new rabbitsInSpace());
+			amountOfGrassInSpace.addSequence("Rabbits (5x)", new rabbitsInSpace());
 		}
 		
 		private void addNewRabbit()
