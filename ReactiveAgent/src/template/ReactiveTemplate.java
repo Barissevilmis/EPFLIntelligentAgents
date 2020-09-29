@@ -1,6 +1,11 @@
 package template;
 
 import java.util.Random;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import logist.simulation.Vehicle;
 import logist.agent.Agent;
@@ -13,35 +18,136 @@ import logist.task.TaskDistribution;
 import logist.topology.Topology;
 import logist.topology.Topology.City;
 
-public class ReactiveTemplate implements ReactiveBehavior {
+public class ReactiveTemplate implements ReactiveBehavior 
+{
 
 	private Random random;
 	private double pPickup;
 	private int numActions;
 	private Agent myAgent;
+	private List<City> cityList;
+	private List<State> stateList;
+	private List<Vehicle> vehicleList;
+	private HashMap<State,HashMap<Integer,Double>> rewardTable;
+	private HashMap<State,Double> transitionTable;
+	private HashMap<State,Double> vVector;
+	private HashMap<State,State> bestVector;
+	private HashMap<State,Double> qVector;
 
 	@Override
-	public void setup(Topology topology, TaskDistribution td, Agent agent) {
+	public void setup(Topology topology, TaskDistribution td, Agent agent) 
+	{
 
 		// Reads the discount factor from the agents.xml file.
 		// If the property is not present it defaults to 0.95
-		Double discount = agent.readProperty("discount-factor", Double.class,
-				0.95);
+		Double discount = agent.readProperty("discount-factor", Double.class, 0.95);
 
 		this.random = new Random();
 		this.pPickup = discount;
 		this.numActions = 0;
 		this.myAgent = agent;
+		this.cityList = topology.cities();	
+		this.vehicleList = agent.vehicles();
+		this.vVector = new HashMap<State,Double>();
+		this.bestVector = new HashMap<State,State>();
+		this.qVector = new HashMap<State,Double>();
+		this.stateList = new ArrayList<State>();
+		this.transitionTable = new HashMap<State,Double>();
+		this.rewardTable = new HashMap<State,HashMap<Integer, Double>>();
+		
+		HashMap<Integer,Double> tmp = new HashMap<Integer,Double>();
+		
+		int currReward = 0;
+		double dist = 0;
+		
+		//TODO: FIX FOR NULL STATE
+		for(City from : cityList)
+		{	
+			for(City to : cityList)
+			{
+				currReward = td.reward(from, to);
+				dist = -from.distanceTo(to);
+				State st;
+
+
+				for(Vehicle veh : vehicleList)
+				{
+					if(!from.equals(to))
+					{
+						tmp.put(veh.id(),currReward - dist*veh.costPerKm());
+					}
+					else
+					{
+						tmp.put(veh.id(),0.0);
+					}
+				}
+				if(!from.equals(to))
+				{
+					st = new State(from, to);
+				}
+				else
+				{
+					st = new State(from, null);
+				}
+				
+				this.rewardTable.put(st, deepCopy(tmp));
+				this.transitionTable.put(st, td.probability(from, to));
+				this.stateList.add(st);
+				this.vVector.put(st, 0.0);
+			
+				tmp.clear();
+			}
+		}
+	
+		//TODO: ADD BESTVEC AND IMPROVE STATES EXIT
+		Double qVal = 0.0;
+		boolean improveStates = true;
+		while(improveStates)
+		{
+			for(Vehicle veh : vehicleList)
+			{
+				for(State fromSt : stateList)
+				{	
+					qVal = this.rewardTable.get(fromSt).get(veh.id()) ;
+					
+					for(State toSt : stateList)
+					{
+						if(toSt.from.equals(fromSt.to))
+						{
+							qVal += discount * (this.transitionTable.get(toSt) * this.vVector.get(toSt));
+						}
+					}			
+					if(this.qVector.containsKey(fromSt))
+					{
+						this.qVector.replace(fromSt, qVal);
+					}
+					else
+					{
+						this.qVector.put(fromSt, qVal);
+					}
+					State maxAction = Collections.max(qVector.entrySet(), HashMap.Entry.comparingByValue()).getKey();
+					bestVector.replace(fromSt, maxAction);
+					vVector.replace(fromSt, qVal);
+				}
+			}
+			improveStates = false;
+		}
 	}
 
 	@Override
-	public Action act(Vehicle vehicle, Task availableTask) {
+	public Action act(Vehicle vehicle, Task availableTask) 
+	{
 		Action action;
 
-		if (availableTask == null || random.nextDouble() > pPickup) {
+		if (availableTask == null || random.nextDouble() > pPickup) 
+		{
 			City currentCity = vehicle.getCurrentCity();
 			action = new Move(currentCity.randomNeighbor(random));
-		} else {
+		}
+		
+		else 
+		{
+			
 			action = new Pickup(availableTask);
 		}
 		
@@ -52,4 +158,16 @@ public class ReactiveTemplate implements ReactiveBehavior {
 		
 		return action;
 	}
+	
+	public static HashMap<Integer, Double> deepCopy(
+		    HashMap<Integer, Double> original)
+		{
+		    HashMap<Integer, Double> deepCopy = new HashMap<Integer, Double>();
+		    for (Map.Entry<Integer, Double> entry : original.entrySet())
+		    {
+		        deepCopy.put(entry.getKey(),
+		           entry.getValue());
+		    }
+		    return deepCopy;
+		}
 }
