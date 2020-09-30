@@ -101,8 +101,8 @@ public class ReactiveTemplate implements ReactiveBehavior
 	
 		//TODO: ADD BESTVEC AND IMPROVE STATES EXIT
 		Double qVal = 0.0;
-		boolean improveStates = true;
-		while(improveStates)
+		Integer x = 0;
+		while(x<100)
 		{
 			for(Vehicle veh : vehicleList)
 			{
@@ -130,7 +130,7 @@ public class ReactiveTemplate implements ReactiveBehavior
 					vVector.replace(fromSt, qVal);
 				}
 			}
-			improveStates = false;
+			x += 1;
 		}
 	}
 
@@ -138,20 +138,22 @@ public class ReactiveTemplate implements ReactiveBehavior
 	public Action act(Vehicle vehicle, Task availableTask) 
 	{
 		Action action;
+		State st = new State(vehicle.getCurrentCity(), availableTask == null ? null : availableTask.deliveryCity);
 
-		if (availableTask == null || random.nextDouble() > pPickup) 
+		City taskTo = this.bestVector.get(st).from;
+
+		// If the destination and the task's destination match, take the task
+		if (taskTo.equals(st.to)) 
 		{
-			City currentCity = vehicle.getCurrentCity();
-			action = new Move(currentCity.randomNeighbor(random));
-		}
-		
+			action =  new Pickup(availableTask);
+		} 
 		else 
 		{
-			
-			action = new Pickup(availableTask);
+			action =  new Move(taskTo);
 		}
-		
-		if (numActions >= 1) {
+	
+		if (numActions >= 1) 
+		{
 			System.out.println("The total profit after "+numActions+" actions is "+myAgent.getTotalProfit()+" (average profit: "+(myAgent.getTotalProfit() / (double)numActions)+")");
 		}
 		numActions++;
