@@ -61,7 +61,6 @@ public class ReactiveRLA implements ReactiveBehavior {
 			change = 0;
 			
 			for (State s : S) {
-//				System.out.println(s);
 				double oldV = V.get(s);
 				double max = Double.NEGATIVE_INFINITY;
 				
@@ -72,7 +71,6 @@ public class ReactiveRLA implements ReactiveBehavior {
 						newVal += discount * T.get(s).get(a).get(s2) * V.get(s2);
 					}
 					
-//					System.out.println(a + " " + newVal);
 					Q.get(s).put(a, newVal);
 					if (newVal > max) {
 						max = newVal;
@@ -80,7 +78,6 @@ public class ReactiveRLA implements ReactiveBehavior {
 					}
 				}
 				
-//				System.out.println(max);
 				V.put(s, max);
 				change += Math.abs(max - oldV);
 			}
