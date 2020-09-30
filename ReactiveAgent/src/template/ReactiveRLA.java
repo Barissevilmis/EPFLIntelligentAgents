@@ -21,8 +21,6 @@ import logist.topology.Topology.City;
 
 public class ReactiveRLA implements ReactiveBehavior {
 
-	private Random random;
-	private double pPickup;
 	private int numActions;
 	private Agent myAgent;
 	private HashMap<State, Integer> best;
@@ -37,8 +35,6 @@ public class ReactiveRLA implements ReactiveBehavior {
 		Double discount = agent.readProperty("discount-factor", Double.class,
 				0.95);
 
-		this.random = new Random();
-		this.pPickup = discount;
 		this.numActions = 0;
 		this.myAgent = agent;
 		int costPerKm = agent.vehicles().get(0).costPerKm();
