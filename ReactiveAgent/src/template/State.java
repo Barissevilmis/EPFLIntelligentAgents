@@ -1,10 +1,12 @@
 package template;
 
-public class State implements Comparable<State> {
+public class State implements Comparable<State> 
+{
 	public int cityId;
 	public int taskCityId;
 	
-	public State(int cityId, int taskCityId) {
+	public State(int cityId, int taskCityId) 
+	{
 		this.cityId = cityId;
 		this.taskCityId = taskCityId;
 	}
@@ -19,31 +21,48 @@ public class State implements Comparable<State> {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(Object obj) 
+	{
 		if (this == obj)
+		{	
 			return true;
+		}
 		if (obj == null)
+		{
 			return false;
+		}
 		if (getClass() != obj.getClass())
+		{
 			return false;
+		}
 		State other = (State) obj;
 		if (cityId != other.cityId)
+		{
 			return false;
+		}
 		if (taskCityId != other.taskCityId)
+		{
 			return false;
+		}
 		return true;
 	}
 	
 	@Override
-	public String toString() {
+	public String toString() 
+	{
 		return "(" + cityId + "," + taskCityId + ")";
 	}
 	
 	@Override
-	public int compareTo(State other) {
+	public int compareTo(State other) 
+	{
 		if (cityId == other.cityId)
+		{
 			return taskCityId - other.taskCityId;
+		}
 		else
+		{
 			return cityId - other.cityId;
+		}
 	}
 }
