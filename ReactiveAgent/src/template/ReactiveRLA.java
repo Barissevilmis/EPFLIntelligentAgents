@@ -87,7 +87,7 @@ public class ReactiveRLA implements ReactiveBehavior
 			
 			System.out.println(change);
 			iter++;
-		} while (change > epsilon);
+		}while(change > epsilon);
 
 		System.out.println("Done in " + iter + " iterations!");
 	}
@@ -204,5 +204,4 @@ public class ReactiveRLA implements ReactiveBehavior
 			}
 		}
 	}
-	
 }
