@@ -80,6 +80,8 @@ public class Deliberative implements DeliberativeBehavior {
 	}
 	
 	private Plan makePlan(Vehicle vehicle, TaskSet tasks, boolean useASTAR) {
+		long startTime = System.currentTimeMillis();
+		
 		// Initial State
 		City initCity = vehicle.getCurrentCity();
 		TaskSet initTasks = vehicle.getCurrentTasks();
@@ -135,6 +137,11 @@ public class Deliberative implements DeliberativeBehavior {
 				if (currCost < bestCost) {
 					bestCost = currCost;
 					bestActions = currActions;
+					
+					if (useASTAR) {
+						// If using A*, the first found goal state has to be optimal.
+						break;
+					}
 				}
 			}
 			
@@ -153,7 +160,7 @@ public class Deliberative implements DeliberativeBehavior {
 					
 					State newState = new State(newCity, newCarriedTasks, newRemainingTasks);
 					
-					double newCost = currCost + currCity.distanceTo(newCity);
+					double newCost = currCost + currCity.distanceTo(newCity)*costPerKm;
 					
 					ArrayList<Action> newActions = new ArrayList<Action>(currActions);
 					for (City city : currCity.pathTo(newCity)) {
@@ -182,7 +189,7 @@ public class Deliberative implements DeliberativeBehavior {
 						
 						State newState = new State(newCity, newCarriedTasks, newRemainingTasks);
 						
-						double newCost = currCost + currCity.distanceTo(newCity);
+						double newCost = currCost + currCity.distanceTo(newCity)*costPerKm;
 						
 						ArrayList<Action> newActions = new ArrayList<Action>(currActions);
 						for (City city : currCity.pathTo(newCity)) {
@@ -200,6 +207,7 @@ public class Deliberative implements DeliberativeBehavior {
 			}
 		}
 		
+		System.out.println("Optimal plan found using " + (useASTAR ? "A*" : "BFS") + " in " + (System.currentTimeMillis() - startTime) + " miliseconds.");
 		System.out.println(bestCost);
 		System.out.println(bestActions);
 		return new Plan(initCity, bestActions);
