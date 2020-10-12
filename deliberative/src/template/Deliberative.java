@@ -143,10 +143,9 @@ public class Deliberative implements DeliberativeBehavior {
 						break;
 					}
 				}
-			}
-			
+			}		
 			// No need to explore if we've already visited this state with a lower cost before
-			if (!visited.containsKey(currState) || currCost < visited.get(currState)) {
+			else if (!visited.containsKey(currState) || currCost < visited.get(currState)) {
 				visited.put(currState, currCost);
 				
 				// Delivery successors
