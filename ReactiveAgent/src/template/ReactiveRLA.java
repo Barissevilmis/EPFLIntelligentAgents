@@ -25,6 +25,7 @@ public class ReactiveRLA implements ReactiveBehavior {
 	private Agent myAgent;
 	private HashMap<State, Integer> best;
 	private List<City> cities;
+	Double discount;
 
 	@Override
 	public void setup(Topology topology, TaskDistribution td, Agent agent) {
@@ -32,8 +33,10 @@ public class ReactiveRLA implements ReactiveBehavior {
 
 		// Reads the discount factor from the agents.xml file.
 		// If the property is not present it defaults to 0.95
-		Double discount = agent.readProperty("discount-factor", Double.class,
-				0.95);
+		discount = agent.readProperty("discount-factor", Double.class, 0.95);
+		Double epsilon = agent.readProperty("epsilon", Double.class, 1e-6);
+		
+		System.out.println(agent.vehicles());
 
 		this.numActions = 0;
 		this.myAgent = agent;
@@ -49,7 +52,7 @@ public class ReactiveRLA implements ReactiveBehavior {
 
 		best = new HashMap<State, Integer>();
 
-		double epsilon = 1e-6;
+//		double epsilon = 1e-6;
 		double change;
 		int iter = 0;
 		
@@ -102,13 +105,14 @@ public class ReactiveRLA implements ReactiveBehavior {
 		
 		if (bestAction == -1) {
 			action = new Pickup(availableTask);
+			System.out.println("Picked up task to " + availableTask.deliveryCity);
 		}
 		else {
 			action = new Move(cities.get(bestAction));
 		}
 		
 		if (numActions >= 1) {
-			System.out.println("The total profit of reactive agent after "+numActions+" actions is "+myAgent.getTotalProfit()+" (average profit: "+(myAgent.getTotalProfit() / (double)numActions)+")");
+			System.out.println("The total profit of reactive agent with discount " +discount+ " after "+numActions+" actions is "+myAgent.getTotalProfit()+" (average profit: "+(myAgent.getTotalProfit() / (double)numActions)+")");
 		}
 		numActions++;
 		
