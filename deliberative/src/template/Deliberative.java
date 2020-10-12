@@ -85,7 +85,7 @@ public class Deliberative implements DeliberativeBehavior {
 		// Initial State
 		City initCity = vehicle.getCurrentCity();
 		TaskSet initTasks = vehicle.getCurrentTasks();
-		State initState = new State(initCity, initTasks, TaskSet.intersectComplement(tasks, initTasks));
+		State initState = new State(initCity, initTasks, tasks);  // the tasks parameter only has the remaining tasks (not carried by any agent)
 		
 		// Initial cost and actions
 		double initCost = 0.0;
