@@ -1,43 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- the main configuration for deliberative agents -->
-<configuration name="ex1-reactive">
+<configuration name="ex2" mode="deliberative">
 
-	<!-- load settings -->
+	<!-- global settings -->
 	<settings import="config/settings_default.xml" />
 	
-	<!-- load the topology from an external file -->
-	<topology import="config/topology/the_netherlands.xml" />
+	<!-- load the topology -->
+	<topology import="config/topology/switzerland.xml" />
 	
-	<!-- load agents from an external file -->
+	<!-- load agents -->
 	<agents import="config/agents.xml" />
 	
 	<!-- define task distribution -->
-	<tasks number="10" rngSeed="-6897376051029796530">
+	<tasks number="6" rngSeed="23456">
 		<!--
 			the probabilities, rewards and weight of tasks
 		-->
 		<probability distribution="uniform" min="0.0" max="1.0" />
 		<reward distribution="constant" policy="short-distances" min="100" max="99999" />
-		<weight distribution="uniform" min="10" max="30" />
-		
-		<!--
-			the probability that there is no task in a city
-		-->
-		<no-task distribution="uniform" min="0.2" max="0.4" />
+		<weight distribution="constant" value="3" />
 
 	</tasks>
 	
 	<!-- the companies and vehicles in the simulation -->
 	<companies>
-	
 		<company name="Company A">
 			<!-- the first vehicle (blue) -->
 			<vehicle name="Vehicle 1">
 				<set color="#0000ff" />
-				<set home="Amsterdam" />
+				<set home="Lausanne" />
 				<set speed="90" />
-				<set capacity="80" />
+				<set capacity="30" />
 				<set cost-per-km="5" />
 			</vehicle>
 		</company>
@@ -46,20 +40,20 @@
 			<!-- the second vehicle (red) -->
 			<vehicle name="Vehicle 2">
 				<set color="#ff0000" />
-				<set home="Eindhoven" />
+				<set home="Zürich" />
 				<set speed="90" />
-				<set capacity="80" />
+				<set capacity="30" />
 				<set cost-per-km="5" />
 			</vehicle>
 		</company>
-				
+		
 		<company name="Company C">
 			<!-- the third vehicle (green) -->
 			<vehicle name="Vehicle 3">
 				<set color="#00ff00" />
-				<set home="Den Haag" />
+				<set home="Bern" />
 				<set speed="90" />
-				<set capacity="80" />
+				<set capacity="30" />
 				<set cost-per-km="5" />
 			</vehicle>
 		</company>
@@ -68,9 +62,9 @@
 			<!-- the fourth vehicle (yellow) -->
 			<vehicle name="Vehicle 4">
 				<set color="#ffff00" />
-				<set home="Apeldoorn" />
+				<set home="Basel" />
 				<set speed="90" />
-				<set capacity="80" />
+				<set capacity="30" />
 				<set cost-per-km="5" />
 			</vehicle>
 		</company>
@@ -79,8 +73,8 @@
 			<!-- the fifth vehicle (magenta) -->
 			<vehicle name="Vehicle 5">
 				<set color="#ff00ff" />
-				<set home="Utrecht" />
-				<set speed="90" />
+				<set home="Thun" />
+				<set speed="220" />
 				<set capacity="80" />
 				<set cost-per-km="5" />
 			</vehicle>
@@ -90,13 +84,12 @@
 			<!-- the sixth vehicle (cyan) -->
 			<vehicle name="Vehicle 6">
 				<set color="#00ffff" />
-				<set home="Groningen" />
-				<set speed="90" />
+				<set home="Luzern" />
+				<set speed="220" />
 				<set capacity="80" />
 				<set cost-per-km="5" />
 			</vehicle>
 		</company>
-		
 	</companies>
 	
 </configuration>

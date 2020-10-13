@@ -1,5 +1,6 @@
 package template;
 
+<<<<<<< HEAD
 public class State implements Comparable<State> 
 {
 	public int cityId;
@@ -7,6 +8,13 @@ public class State implements Comparable<State>
 	
 	public State(int cityId, int taskCityId) 
 	{
+=======
+public class State implements Comparable<State> {
+	public int cityId;
+	public int taskCityId;
+	
+	public State(int cityId, int taskCityId) {
+>>>>>>> dogatest
 		this.cityId = cityId;
 		this.taskCityId = taskCityId;
 	}
@@ -21,6 +29,7 @@ public class State implements Comparable<State>
 	}
 
 	@Override
+<<<<<<< HEAD
 	public boolean equals(Object obj) 
 	{
 		if (this == obj)
@@ -44,16 +53,35 @@ public class State implements Comparable<State>
 		{
 			return false;
 		}
+=======
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		State other = (State) obj;
+		if (cityId != other.cityId)
+			return false;
+		if (taskCityId != other.taskCityId)
+			return false;
+>>>>>>> dogatest
 		return true;
 	}
 	
 	@Override
+<<<<<<< HEAD
 	public String toString() 
 	{
+=======
+	public String toString() {
+>>>>>>> dogatest
 		return "(" + cityId + "," + taskCityId + ")";
 	}
 	
 	@Override
+<<<<<<< HEAD
 	public int compareTo(State other) 
 	{
 		if (cityId == other.cityId)
@@ -64,5 +92,12 @@ public class State implements Comparable<State>
 		{
 			return cityId - other.cityId;
 		}
+=======
+	public int compareTo(State other) {
+		if (cityId == other.cityId)
+			return taskCityId - other.taskCityId;
+		else
+			return cityId - other.cityId;
+>>>>>>> dogatest
 	}
 }
