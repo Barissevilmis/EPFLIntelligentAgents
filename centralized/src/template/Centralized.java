@@ -38,6 +38,7 @@ public class Centralized implements CentralizedBehavior {
     private Agent agent;
     private long timeout_setup;
     private long timeout_plan;
+    private PDP pdp;
     
     @Override
     public void setup(Topology topology, TaskDistribution distribution,
@@ -66,41 +67,53 @@ public class Centralized implements CentralizedBehavior {
     public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
         long time_start = System.currentTimeMillis();
         
-//		System.out.println("Agent " + agent.id() + " has tasks " + tasks);
-        Plan planVehicle1 = stochasticLocalSearchPlan(vehicles.get(0), tasks);
-
-        List<Plan> plans = new ArrayList<Plan>();
-        plans.add(planVehicle1);
-        while (plans.size() < vehicles.size()) {
-            plans.add(Plan.EMPTY);
-        }
+        System.out.println(tasks);
+        System.out.println();
+        
+        pdp = new PDP(vehicles, tasks);
+        Assignment solution = pdp.SLSAlgorithm();
+        System.out.println(solution);
         
         long time_end = System.currentTimeMillis();
         long duration = time_end - time_start;
         System.out.println("The plan was generated in " + duration + " milliseconds.");
         
-        return plans;
+        return convertSolutionToPlans(vehicles, solution);
     }
-
-    private Plan stochasticLocalSearchPlan(Vehicle vehicle, TaskSet tasks) {
-    	City initCity = vehicle.getCurrentCity();
-		TaskSet initTasks = vehicle.getCurrentTasks();
-		
-		// Initial cost and actions
-		double initCost = 0.0;
-		ArrayList<Action> initActions = new ArrayList<Action>();
-		//State initState = new State(initCity, initTasks, tasks, initCost, initActions);  // the tasks parameter only has the remaining tasks (not carried by any agent)
-		
-		// Minimum cost to get to a goal state, and the actions to get there
-		double bestCost = Double.MAX_VALUE;
-		ArrayList<Action> bestActions = new ArrayList<Action>();
-		
-		HashMap<Object, Task> nextTask = new HashMap<Object, Task>();
-		
-		List<Task> time = new ArrayList<Task>(tasks.size());
-
-   
-        return null;
+    
+    public List<Plan> convertSolutionToPlans(List<Vehicle> vehicles, Assignment solution) {
+    	ArrayList<Plan> plans = new ArrayList<Plan>();
+    	
+    	for (Vehicle vehicle : vehicles) {
+    		City current = vehicle.getCurrentCity();
+    		Plan plan = new Plan(current);
+    		
+    		for (TaskAction taskAction : solution.getTaskActions(vehicle)) {
+    			Task task = taskAction.task;
+    			boolean isPickup = taskAction.isPickup;
+    			
+    			if (isPickup) {
+    				// move: current city => pickup location
+    	            for (City city : current.pathTo(task.pickupCity)) {
+    	                plan.appendMove(city);
+    	            }
+    	            plan.appendPickup(task);
+    	            current = task.pickupCity;
+    			}
+    			else {
+    				// move: pickup location => delivery location
+    	            for (City city : current.pathTo(task.deliveryCity)) {
+    	                plan.appendMove(city);
+    	            }
+    	            plan.appendDelivery(task);
+    	            current = task.deliveryCity;
+    			}
+    		}
+    		
+    		plans.add(plan);
+    	}
+    	
+    	return plans;
     }
     
 }
