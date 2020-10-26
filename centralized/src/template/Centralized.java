@@ -1,0 +1,106 @@
+package template;
+
+import java.io.File;
+//the list of imports
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.Random;
+import logist.LogistSettings;
+
+import logist.Measures;
+import logist.behavior.AuctionBehavior;
+import logist.behavior.CentralizedBehavior;
+import logist.agent.Agent;
+import logist.config.Parsers;
+import logist.simulation.Vehicle;
+import logist.plan.Action;
+import logist.plan.Plan;
+import logist.task.Task;
+import logist.task.TaskDistribution;
+import logist.task.TaskSet;
+import logist.topology.Topology;
+import logist.topology.Topology.City;
+
+/**
+ * A very simple auction agent that assigns all tasks to its first vehicle and
+ * handles them sequentially.
+ *
+ */
+@SuppressWarnings("unused")
+public class Centralized implements CentralizedBehavior {
+
+    private Topology topology;
+    private TaskDistribution distribution;
+    private Agent agent;
+    private long timeout_setup;
+    private long timeout_plan;
+    
+    @Override
+    public void setup(Topology topology, TaskDistribution distribution,
+            Agent agent) {
+        
+        // this code is used to get the timeouts
+        LogistSettings ls = null;
+        try {
+            ls = Parsers.parseSettings("config" + File.separator + "settings_default.xml");
+        }
+        catch (Exception exc) {
+            System.out.println("There was a problem loading the configuration file.");
+        }
+        
+        // the setup method cannot last more than timeout_setup milliseconds
+        timeout_setup = ls.get(LogistSettings.TimeoutKey.SETUP);
+        // the plan method cannot execute more than timeout_plan milliseconds
+        timeout_plan = ls.get(LogistSettings.TimeoutKey.PLAN);
+        
+        this.topology = topology;
+        this.distribution = distribution;
+        this.agent = agent;
+    }
+
+    @Override
+    public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
+        long time_start = System.currentTimeMillis();
+        
+//		System.out.println("Agent " + agent.id() + " has tasks " + tasks);
+        Plan planVehicle1 = stochasticLocalSearchPlan(vehicles.get(0), tasks);
+
+        List<Plan> plans = new ArrayList<Plan>();
+        plans.add(planVehicle1);
+        while (plans.size() < vehicles.size()) {
+            plans.add(Plan.EMPTY);
+        }
+        
+        long time_end = System.currentTimeMillis();
+        long duration = time_end - time_start;
+        System.out.println("The plan was generated in " + duration + " milliseconds.");
+        
+        return plans;
+    }
+
+    private Plan stochasticLocalSearchPlan(Vehicle vehicle, TaskSet tasks) {
+    	City initCity = vehicle.getCurrentCity();
+		TaskSet initTasks = vehicle.getCurrentTasks();
+		
+		// Initial cost and actions
+		double initCost = 0.0;
+		ArrayList<Action> initActions = new ArrayList<Action>();
+		//State initState = new State(initCity, initTasks, tasks, initCost, initActions);  // the tasks parameter only has the remaining tasks (not carried by any agent)
+		
+		// Minimum cost to get to a goal state, and the actions to get there
+		double bestCost = Double.MAX_VALUE;
+		ArrayList<Action> bestActions = new ArrayList<Action>();
+		
+		HashMap<Object, Task> nextTask = new HashMap<Object, Task>();
+		
+		List<Task> time = new ArrayList<Task>(tasks.size());
+
+   
+        return null;
+    }
+    
+}
