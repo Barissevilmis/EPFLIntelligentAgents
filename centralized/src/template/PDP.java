@@ -29,10 +29,15 @@ public class PDP
 		List<Assignment> N;
 		Assignment A = selectInitialSolutionMaxCap();
 		Assignment AOld;
-		for(int i = 0; i < 10000; i++)
+		for(int i = 0; i < 5000; i++)
 		{
 			AOld = A.clone();
 			N = chooseNeighbours(AOld);
+			
+//			System.out.println("Cost of giving task to other vehicle: " + objective(N.get(0)));
+//			System.out.println("Cost of giving task to other vehicle: " + objective(N.get(1)));
+//			System.out.println("Cost of giving task to other vehicle: " + objective(N.get(2)));
+			
 			A = localChoice(N, AOld, 0.4);
 		}
 		return A;
@@ -175,32 +180,37 @@ public class PDP
 		{
 			if(!veh2.equals(veh1))
 			{
-		
-				List<TaskAction> veh1ta = new ArrayList<TaskAction>(A.getTaskActions(veh1));
-				List<TaskAction> veh2ta = new ArrayList<TaskAction>(A.getTaskActions(veh2));
-								
-				TaskAction ta1Pickup = veh1ta.remove(0);
-				TaskAction ta1Deliver = null;
-								
-				for(int i = 0; i < veh1ta.size(); i++)
+				for(int j = 0; j < A.getTaskActions(veh1).size(); j++ )
 				{
-					if(veh1ta.get(i).task.id == ta1Pickup.task.id)
+					if(A.getTaskActions(veh1).get(j).isPickup)
 					{
-						ta1Deliver = veh1ta.remove(i);
-						break;
+						List<TaskAction> veh1ta = new ArrayList<TaskAction>(A.getTaskActions(veh1));
+						List<TaskAction> veh2ta = new ArrayList<TaskAction>(A.getTaskActions(veh2));
+						
+						TaskAction ta1Pickup = veh1ta.remove(j);
+						TaskAction ta1Deliver = null;
+										
+						for(int i = 0; i < veh1ta.size(); i++)
+						{
+							if(veh1ta.get(i).task.id == ta1Pickup.task.id)
+							{
+								ta1Deliver = veh1ta.remove(i);
+								break;
+							}
+						}
+						
+						// Add task to the end of vehicle 2
+						veh2ta.add(ta1Pickup);
+						veh2ta.add(ta1Deliver);
+						
+						Assignment neighbour = A.clone();
+						
+						neighbour.updateTaskActions(veh1, veh1ta);
+						neighbour.updateTaskActions(veh2, veh2ta);
+						
+						neighbours.add(neighbour);
 					}
 				}
-				
-				// Add task to the end of vehicle 2
-				veh2ta.add(ta1Pickup);
-				veh2ta.add(ta1Deliver);
-				
-				Assignment neighbour = A.clone();
-				
-				neighbour.updateTaskActions(veh1, veh1ta);
-				neighbour.updateTaskActions(veh2, veh2ta);
-				
-				neighbours.add(neighbour);
 			}
 		}
 		

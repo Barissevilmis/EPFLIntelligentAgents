@@ -72,7 +72,20 @@ public class Centralized implements CentralizedBehavior {
         
         pdp = new PDP(vehicles, tasks);
         Assignment solution = pdp.SLSAlgorithm();
-        System.out.println(solution);
+//        System.out.println(solution);
+        
+//        Assignment solution = pdp.selectInitialSolutionMaxCap();
+//        System.out.println(solution);
+//        System.out.println(pdp.objective(solution));
+//        
+//        List<Assignment> neighbours = pdp.chooseNeighbours(solution);
+//        System.out.println(neighbours.get(0));
+//        System.out.println(pdp.objective(neighbours.get(0)));
+//        System.out.println(neighbours.get(1));
+//        System.out.println(pdp.objective(neighbours.get(1)));
+//        System.out.println(neighbours.get(2));
+//        System.out.println(pdp.objective(neighbours.get(2)));
+        
         
         long time_end = System.currentTimeMillis();
         long duration = time_end - time_start;
