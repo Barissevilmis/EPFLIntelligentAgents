@@ -17,6 +17,7 @@ public class PDP
 	private TaskSet tasks;
 	private static Assignment ABest;
 	private static double costBest = Double.MAX_VALUE;
+	private double pr = 0.4;
 
 	public PDP(List<Vehicle> vehicles, TaskSet tasks) 
 	{
@@ -33,12 +34,7 @@ public class PDP
 		{
 			AOld = A.clone();
 			N = chooseNeighbours(AOld);
-			
-//			System.out.println("Cost of giving task to other vehicle: " + objective(N.get(0)));
-//			System.out.println("Cost of giving task to other vehicle: " + objective(N.get(1)));
-//			System.out.println("Cost of giving task to other vehicle: " + objective(N.get(2)));
-			
-			A = localChoice(N, AOld, 0.4);
+			A = localChoice(N, AOld, pr);
 		}
 		return A;
 	}
@@ -76,8 +72,10 @@ public class PDP
 				return null;
 			}
 		}	
-		Assignment A = new Assignment(vla);		
-		ABest = new Assignment(vla);
+		Assignment initA = new Assignment(vla);
+		List<Assignment> Alist = changingTaskOrder(initA, maxVehicle);	
+		Assignment A = localChoice(Alist, initA, pr);	
+		ABest = A.clone();
 		return A;
 	}
 	
