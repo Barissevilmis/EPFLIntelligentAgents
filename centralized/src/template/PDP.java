@@ -18,19 +18,21 @@ public class PDP
 	private static Assignment ABest;
 	private static double costBest = Double.MAX_VALUE;
 	private double pr = 0.4;
+	private Random rand;
 
 	public PDP(List<Vehicle> vehicles, TaskSet tasks) 
 	{
 		this.vehicles = vehicles;
 		this.tasks = tasks;
+		this.rand = new Random(0);
 	}
 	
-	public Assignment SLSAlgorithm()
+	public Assignment SLSAlgorithm(long timeStart, long timeout)
 	{
 		List<Assignment> N;
 		Assignment A = selectInitialSolutionMaxCap();
 		Assignment AOld;
-		for(int i = 0; i < 5000; i++)
+		for(int i = 0; i < 5000 && System.currentTimeMillis() - timeStart <= timeout - 1000; i++)
 		{
 			AOld = A.clone();
 			N = chooseNeighbours(AOld);
@@ -74,7 +76,7 @@ public class PDP
 			}
 		}	
 		Assignment initA = new Assignment(vla);
-		List<Assignment> Alist = changingTaskOrder(initA, maxVehicle);	
+		List<Assignment> Alist = changingTaskOrder(initA, maxVehicle);
 		Assignment A = localChoice(Alist, initA, pr);	
 		ABest = A.clone();
 		costBest = objective(ABest);
@@ -84,7 +86,6 @@ public class PDP
 	public Assignment selectInitialSolutionRandom()
 	{
 		HashMap<Vehicle, List<TaskAction>> vla = new HashMap<Vehicle, List<TaskAction>>();
-		Random rand = new Random();
 		
 		for(Vehicle v : vehicles)
 		{
@@ -125,12 +126,15 @@ public class PDP
 	
 	public Assignment localChoice(List<Assignment> neighbourhood, Assignment AOld, double pr)
 	{	
+		if (neighbourhood.isEmpty()) {
+			return AOld;
+		}
+		
 		double minCost = Double.MAX_VALUE;
 		List<Assignment> minA = new ArrayList<Assignment>();
-		Random rand = new Random();
 		
 		HashMap<Assignment, Double> costs = new HashMap<Assignment, Double>();
-		
+				
 		for(Assignment A : neighbourhood)
 		{
 			double costA = objective(A);
@@ -163,10 +167,10 @@ public class PDP
 		
 		if(p <= pr)
 		{
-			System.out.println("Returning Anew with cost " + minCost);
+//			System.out.println("Returning Anew with cost " + minCost);
 			return Anew;
 		}	
-		System.out.println("Returning Aold ");
+//		System.out.println("Returning Aold ");
 		return AOld;
 	}
 	
@@ -176,10 +180,9 @@ public class PDP
 	{
 		List<Vehicle> vehicleList = A.getVehiclesWithTask();
 		List<Assignment> N = new ArrayList<Assignment>();
-		Random rand = new Random();
 		
 		Vehicle randomVehicle = vehicleList.get(rand.nextInt(vehicleList.size()));
-
+		
 		N.addAll(changingVehicle(A, randomVehicle));
 
 		N.addAll(changingTaskOrder(A, randomVehicle));

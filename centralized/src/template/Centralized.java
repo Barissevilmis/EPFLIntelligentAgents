@@ -60,9 +60,7 @@ public class Centralized implements CentralizedBehavior {
         
         this.topology = topology;
         this.distribution = distribution;
-        this.agent = agent;
-        
-        // Find initial solution respecting the timeout
+        this.agent = agent;        
     }
 
     @Override
@@ -73,7 +71,11 @@ public class Centralized implements CentralizedBehavior {
         System.out.println();
         
         pdp = new PDP(vehicles, tasks);
-        Assignment solution = pdp.SLSAlgorithm();        
+        Assignment solution = pdp.SLSAlgorithm(time_start, timeout_plan);        
+        Assignment bestSolution = pdp.getBestAssignment();
+        
+        System.out.println("Final solution cost: " + pdp.objective(solution));
+        System.out.println("Best seen solution cost: " + pdp.objective(bestSolution));
         
         long time_end = System.currentTimeMillis();
         long duration = time_end - time_start;
