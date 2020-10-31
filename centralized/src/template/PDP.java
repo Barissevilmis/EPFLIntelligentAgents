@@ -12,27 +12,30 @@ import logist.topology.Topology.City;
 
 public class PDP 
 {
-
+	//To change iteration amount or probability: Change iter and pr
 	private List<Vehicle> vehicles;
 	private TaskSet tasks;
 	private static Assignment ABest;
 	private static double costBest = Double.MAX_VALUE;
 	private double pr = 0.4;
+	private int iter = 10000;
 	private Random rand;
 
 	public PDP(List<Vehicle> vehicles, TaskSet tasks) 
 	{
 		this.vehicles = vehicles;
 		this.tasks = tasks;
-		this.rand = new Random(0);
+		this.rand = new Random();
+		//Line below for tests
+		//this.rand = new Random(0);
 	}
 	
 	public Assignment SLSAlgorithm(long timeStart, long timeout)
 	{
 		List<Assignment> N;
-		Assignment A = selectInitialSolutionMaxCap();
+		Assignment A = selectInitialSolutionMaxCap(timeStart, timeout);
 		Assignment AOld;
-		for(int i = 0; i < 5000 && System.currentTimeMillis() - timeStart <= timeout - 1000; i++)
+		for(int i = 0; i < iter && System.currentTimeMillis() - timeStart <= timeout - 1000; i++)
 		{
 			AOld = A.clone();
 			N = chooseNeighbours(AOld);
@@ -46,7 +49,7 @@ public class PDP
 		return ABest;
 	}
 	
-	public Assignment selectInitialSolutionMaxCap()
+	public Assignment selectInitialSolutionMaxCap(long timeStart,long timeout)
 	{
 		Vehicle maxVehicle = vehicles.get(0);
 		int maxW = maxVehicle.capacity();
@@ -76,57 +79,27 @@ public class PDP
 			}
 		}	
 		Assignment initA = new Assignment(vla);
-		List<Assignment> Alist = changingTaskOrder(initA, maxVehicle);
-		Assignment A = localChoice(Alist, initA, pr);	
-		ABest = A.clone();
-		costBest = objective(ABest);
-		return A;
+		if(System.currentTimeMillis() - timeStart <= timeout - 1000)
+		{
+			List<Assignment> Alist = changingTaskOrder(initA, maxVehicle);
+			Assignment A = localChoice(Alist, initA, pr);	
+			ABest = A.clone();
+			costBest = objective(ABest);
+			return A;
+		}
+		else
+		{
+			ABest = initA.clone();
+			costBest = objective(ABest);
+			return initA;
+		}
 	}
 	
-	public Assignment selectInitialSolutionRandom()
-	{
-		HashMap<Vehicle, List<TaskAction>> vla = new HashMap<Vehicle, List<TaskAction>>();
-		
-		for(Vehicle v : vehicles)
-		{
-			vla.put(v, new ArrayList<TaskAction>());
-		}
-
-		for(Task t : tasks)
-		{
-			// Find the vehicles that could carry this task
-			ArrayList<Vehicle> possibleVehicles = new ArrayList<Vehicle>();
-			for (Vehicle v : vehicles)
-			{
-				if (v.capacity() >= t.weight) 
-				{
-					possibleVehicles.add(v);
-				}
-			}
-			
-			if (!possibleVehicles.isEmpty())
-			{
-				Vehicle randVeh = possibleVehicles.get(rand.nextInt(possibleVehicles.size()));
-				TaskAction ta1 = new TaskAction(t, true);
-				TaskAction ta2 = new TaskAction(t, false);
-				vla.get(randVeh).add(ta1);
-				vla.get(randVeh).add(ta2);
-			}
-			else 
-			{
-				System.out.println("ERROR: there is a task that no vehicle can carry!");
-				return null;
-			}
-		}	
-		Assignment A = new Assignment(vla);		
-		ABest = new Assignment(vla);
-		costBest = objective(ABest);
-		return A;
-	}
 	
 	public Assignment localChoice(List<Assignment> neighbourhood, Assignment AOld, double pr)
 	{	
-		if (neighbourhood.isEmpty()) {
+		if (neighbourhood.isEmpty()) 
+		{
 			return AOld;
 		}
 		
@@ -145,7 +118,7 @@ public class PDP
 			costs.put(A, costA);
 		}
 		
-		// Find all the assignments with min cost
+		// Find all the assignments with minimum cost
 		for(Assignment A : neighbourhood)
 		{
 			double costA = costs.get(A);
@@ -157,7 +130,7 @@ public class PDP
 		Assignment Anew = minA.get(rand.nextInt(minA.size()));
 		double p = rand.nextDouble();
 		
-		//TO SAVE THE OVERALL BEST SOLUTION
+		//To save the overall best solution
 		if(costBest > minCost)
 		{
 			ABest = Anew;
@@ -167,10 +140,8 @@ public class PDP
 		
 		if(p <= pr)
 		{
-//			System.out.println("Returning Anew with cost " + minCost);
 			return Anew;
 		}	
-//		System.out.println("Returning Aold ");
 		return AOld;
 	}
 	
