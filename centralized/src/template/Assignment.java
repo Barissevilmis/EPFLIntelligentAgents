@@ -65,4 +65,30 @@ public class Assignment
 	public String toString() {
 		return vehicleActionList.toString();
 	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((vehicleActionList == null) ? 0 : vehicleActionList.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Assignment other = (Assignment) obj;
+		if (vehicleActionList == null) {
+			if (other.vehicleActionList != null)
+				return false;
+		} else if (!vehicleActionList.equals(other.vehicleActionList))
+			return false;
+		return true;
+	}
+
 }

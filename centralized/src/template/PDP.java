@@ -69,6 +69,7 @@ public class PDP
 			}
 			else
 			{
+				System.out.println("ERROR: there is a task that no vehicle can carry!");
 				return null;
 			}
 		}	
@@ -76,6 +77,7 @@ public class PDP
 		List<Assignment> Alist = changingTaskOrder(initA, maxVehicle);	
 		Assignment A = localChoice(Alist, initA, pr);	
 		ABest = A.clone();
+		costBest = objective(ABest);
 		return A;
 	}
 	
@@ -91,21 +93,33 @@ public class PDP
 
 		for(Task t : tasks)
 		{
-			Vehicle randVeh = vehicles.get(rand.nextInt(vehicles.size()));
-			if(randVeh.capacity() >= t.weight)
+			// Find the vehicles that could carry this task
+			ArrayList<Vehicle> possibleVehicles = new ArrayList<Vehicle>();
+			for (Vehicle v : vehicles)
 			{
+				if (v.capacity() >= t.weight) 
+				{
+					possibleVehicles.add(v);
+				}
+			}
+			
+			if (!possibleVehicles.isEmpty())
+			{
+				Vehicle randVeh = possibleVehicles.get(rand.nextInt(possibleVehicles.size()));
 				TaskAction ta1 = new TaskAction(t, true);
 				TaskAction ta2 = new TaskAction(t, false);
 				vla.get(randVeh).add(ta1);
 				vla.get(randVeh).add(ta2);
 			}
-			else
+			else 
 			{
+				System.out.println("ERROR: there is a task that no vehicle can carry!");
 				return null;
 			}
 		}	
 		Assignment A = new Assignment(vla);		
 		ABest = new Assignment(vla);
+		costBest = objective(ABest);
 		return A;
 	}
 	
@@ -115,6 +129,8 @@ public class PDP
 		List<Assignment> minA = new ArrayList<Assignment>();
 		Random rand = new Random();
 		
+		HashMap<Assignment, Double> costs = new HashMap<Assignment, Double>();
+		
 		for(Assignment A : neighbourhood)
 		{
 			double costA = objective(A);
@@ -122,11 +138,13 @@ public class PDP
 			{
 				minCost = costA;
 			}
+			costs.put(A, costA);
 		}
 		
+		// Find all the assignments with min cost
 		for(Assignment A : neighbourhood)
 		{
-			double costA = objective(A);
+			double costA = costs.get(A);
 			if(costA == minCost)
 			{
 				minA.add(A);
@@ -161,7 +179,6 @@ public class PDP
 		Random rand = new Random();
 		
 		Vehicle randomVehicle = vehicleList.get(rand.nextInt(vehicleList.size()));
-		
 
 		N.addAll(changingVehicle(A, randomVehicle));
 
@@ -182,31 +199,36 @@ public class PDP
 				{
 					if(A.getTaskActions(veh1).get(j).isPickup)
 					{
-						List<TaskAction> veh1ta = new ArrayList<TaskAction>(A.getTaskActions(veh1));
-						List<TaskAction> veh2ta = new ArrayList<TaskAction>(A.getTaskActions(veh2));
+						int taskWeight = A.getTaskActions(veh1).get(j).task.weight;
 						
-						TaskAction ta1Pickup = veh1ta.remove(j);
-						TaskAction ta1Deliver = null;
-										
-						for(int i = 0; i < veh1ta.size(); i++)
+						if (veh2.capacity() >= taskWeight)
 						{
-							if(veh1ta.get(i).task.id == ta1Pickup.task.id)
+							List<TaskAction> veh1ta = new ArrayList<TaskAction>(A.getTaskActions(veh1));
+							List<TaskAction> veh2ta = new ArrayList<TaskAction>(A.getTaskActions(veh2));
+							
+							TaskAction ta1Pickup = veh1ta.remove(j);
+							TaskAction ta1Deliver = null;
+											
+							for(int i = 0; i < veh1ta.size(); i++)
 							{
-								ta1Deliver = veh1ta.remove(i);
-								break;
+								if(veh1ta.get(i).task.id == ta1Pickup.task.id)
+								{
+									ta1Deliver = veh1ta.remove(i);
+									break;
+								}
 							}
+							
+							// Add task to the end of vehicle 2
+							veh2ta.add(ta1Pickup);
+							veh2ta.add(ta1Deliver);
+							
+							Assignment neighbour = A.clone();
+							
+							neighbour.updateTaskActions(veh1, veh1ta);
+							neighbour.updateTaskActions(veh2, veh2ta);
+							
+							neighbours.add(neighbour);
 						}
-						
-						// Add task to the end of vehicle 2
-						veh2ta.add(ta1Pickup);
-						veh2ta.add(ta1Deliver);
-						
-						Assignment neighbour = A.clone();
-						
-						neighbour.updateTaskActions(veh1, veh1ta);
-						neighbour.updateTaskActions(veh2, veh2ta);
-						
-						neighbours.add(neighbour);
 					}
 				}
 			}
@@ -266,14 +288,16 @@ public class PDP
 			
 			for(int j = 0; j < lta.size(); j++)
 			{
-				if(lta.get(i) != lta.get(j))
+				if(i != j)
 				{
+					// Check if pickup comes before delivery, otherwise return false
 					if(lta.get(i).isPickup && !lta.get(j).isPickup && lta.get(i).task.id == lta.get(j).task.id && i > j)
 					{
 						return false;
 					}
 				}
 			}
+			// Check if carried weight exceeds vehicle capacity at any point
 			if(w > v.capacity())
 			{
 				return false;

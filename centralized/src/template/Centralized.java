@@ -61,6 +61,8 @@ public class Centralized implements CentralizedBehavior {
         this.topology = topology;
         this.distribution = distribution;
         this.agent = agent;
+        
+        // Find initial solution respecting the timeout
     }
 
     @Override
@@ -71,21 +73,7 @@ public class Centralized implements CentralizedBehavior {
         System.out.println();
         
         pdp = new PDP(vehicles, tasks);
-        Assignment solution = pdp.SLSAlgorithm();
-//        System.out.println(solution);
-        
-//        Assignment solution = pdp.selectInitialSolutionMaxCap();
-//        System.out.println(solution);
-//        System.out.println(pdp.objective(solution));
-//        
-//        List<Assignment> neighbours = pdp.chooseNeighbours(solution);
-//        System.out.println(neighbours.get(0));
-//        System.out.println(pdp.objective(neighbours.get(0)));
-//        System.out.println(neighbours.get(1));
-//        System.out.println(pdp.objective(neighbours.get(1)));
-//        System.out.println(neighbours.get(2));
-//        System.out.println(pdp.objective(neighbours.get(2)));
-        
+        Assignment solution = pdp.SLSAlgorithm();        
         
         long time_end = System.currentTimeMillis();
         long duration = time_end - time_start;
@@ -94,6 +82,7 @@ public class Centralized implements CentralizedBehavior {
         return convertSolutionToPlans(vehicles, solution);
     }
     
+    // Generate proper plan from the pickup and delivery actions
     public List<Plan> convertSolutionToPlans(List<Vehicle> vehicles, Assignment solution) {
     	ArrayList<Plan> plans = new ArrayList<Plan>();
     	
@@ -106,7 +95,7 @@ public class Centralized implements CentralizedBehavior {
     			boolean isPickup = taskAction.isPickup;
     			
     			if (isPickup) {
-    				// move: current city => pickup location
+    				// move => pickup location
     	            for (City city : current.pathTo(task.pickupCity)) {
     	                plan.appendMove(city);
     	            }
@@ -114,7 +103,7 @@ public class Centralized implements CentralizedBehavior {
     	            current = task.pickupCity;
     			}
     			else {
-    				// move: pickup location => delivery location
+    				// move => delivery location
     	            for (City city : current.pathTo(task.deliveryCity)) {
     	                plan.appendMove(city);
     	            }
