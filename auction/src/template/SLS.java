@@ -43,7 +43,38 @@ public class SLS
 		//Line below for tests
 		//this.rand = new Random(0);
 	}
+	public Assignment addTaskToSolution(Assignment A, Task t)
+	{
+		Assignment newA = A.clone();
+		for(Vehicle veh : this.vehicles)
+		{
+			if(veh.capacity() >= t.weight)
+			{
+				List<TaskAction> lsta = new ArrayList<TaskAction>(A.getTaskActions(veh));
+				lsta.add(new TaskAction(t,true));
+				lsta.add(new TaskAction(t,false));
+				newA.updateTaskActions(veh, lsta);
+				break;
+			}
+		}
+		return newA;
+	}
 	
+	
+	public Assignment SLSAlgorithm(Assignment init, long timeStart, long timeout)
+	{
+		System.out.println("Calling SLS with " + this.taskList);
+		List<Assignment> N;
+		Assignment A = init;
+		Assignment AOld;
+		for(int i = 0; i < iter && System.currentTimeMillis() - timeStart <= timeout - 1000; i++)
+		{
+			AOld = A.clone();
+			N = chooseNeighbours(AOld);
+			A = localChoice(N, AOld, pr);
+		}
+		return ABest;
+	}
 	
 	public Assignment SLSAlgorithm(long timeStart, long timeout)
 	{
