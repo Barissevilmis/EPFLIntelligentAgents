@@ -1,8 +1,9 @@
 package template;
 
-import java.io.File;
 //the list of imports
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -45,6 +46,8 @@ public class Auction implements AuctionBehavior {
 	private Double marginal;
 	private Double profitRatio;
 	
+	private Long income;
+	
 	private SLS sls;
 	private Assignment solution;
 	private Assignment init;
@@ -83,6 +86,8 @@ public class Auction implements AuctionBehavior {
         this.timeout_plan = ls.get(LogistSettings.TimeoutKey.PLAN);
         // the bid method cannot execute more than timeout_bid milliseconds
         this.timeout_bid = ls.get(LogistSettings.TimeoutKey.BID);
+        
+        income = 0L;
 	}
 
 	@Override
@@ -96,6 +101,7 @@ public class Auction implements AuctionBehavior {
 		if (winner == agent.id()) 
 		{
 			this.cost = this.newCost;
+			income += bids[agent.id()];
 		}
 		else 
 		{
@@ -123,28 +129,70 @@ public class Auction implements AuctionBehavior {
 		}
 		
 		
-		this.init = this.sls.addTaskToSolution(this.solution, task);		
-		this.solution = this.sls.SLSAlgorithm(this.init, System.currentTimeMillis(), timeout_bid);
+//		if (this.solution != null) 
+//		{
+//			// Initialize SLS from previous solution
+//			this.init = this.sls.addTaskToSolution(this.solution, task);		
+//			this.solution = this.sls.SLSAlgorithm(this.init, System.currentTimeMillis(), timeout_bid);
+//		}
+//		else 
+//		{
+//			this.solution = this.sls.SLSAlgorithm(System.currentTimeMillis(), timeout_bid);
+//		}
+		
+		this.solution = this.sls.SLSAlgorithm(System.currentTimeMillis(), timeout_bid);
 		this.newCost = this.sls.objective(this.solution);
 		this.marginal = this.newCost - this.cost;
-		
 		
 		System.out.println("Tasks: " + this.tasks);
 		System.out.println();
 		
 		return (long) (Math.max(1, this.marginal) * this.profitRatio);
 	}
+	
 
 	@Override
 	public List<Plan> plan(List<Vehicle> vehicles, TaskSet tasks) {
 		System.out.println("Agent " + agent.id() + " has tasks " + tasks);
 		System.out.println("My tasks: " + this.tasks);
+		System.out.println("Total income: " + income);
 		
-//		System.out.println(this.tasks.equals(tasks));
 		
-		this.solution = this.sls.SLSAlgorithm(System.currentTimeMillis(), this.timeout_plan);
+//		this.sls = new SLS(this.vehicles, tasks);
+//		this.solution = this.sls.SLSAlgorithm(System.currentTimeMillis(), this.timeout_plan);
+		
+		this.solution = this.sls.SLSAlgorithm(this.solution, System.currentTimeMillis(), this.timeout_plan);
+		
+		HashMap<Integer, Task> idToTask = new HashMap<Integer, Task>();
+		for (Task task : tasks) {
+			idToTask.put(task.id, task);
+		}
+		
+		//System.out.println(this.tasks.equals(tasks));
+		for(Vehicle v : vehicles)
+		{
+			for(TaskAction ta :  this.solution.getTaskActions(v))
+			{
+				Task correctTask = idToTask.get(ta.task.id);
+				ta.task = correctTask;
+			}
+		}		
+
+		//		solution:
+//			v1: [P t1, D t1]
+//			v2: 
+//		
+//		for vehicle in solution:
+//			for taskaction in vehicle:
+//				replace task with taskset version		
+		
+		double finalCost = this.sls.objective(this.solution);
+		System.out.println("Total cost: " + finalCost);
+		System.out.println("Profit: " + (income - finalCost));
+		
 		return convertSolutionToPlans(this.vehicles, this.solution);
 	}
+	
 	
 	// Generate proper plan from the pickup and delivery actions
     public List<Plan> convertSolutionToPlans(List<Vehicle> vehicles, Assignment solution) {
@@ -180,5 +228,16 @@ public class Auction implements AuctionBehavior {
     	}
     	
     	return plans;
+    }
+    
+    
+    public List<Task> auctionToPlan(List<Task> ts)
+    {
+    	List<Task> res = new ArrayList<Task>();
+    	for(Task t : ts)
+    	{
+    		res.add(t);
+    	}
+    	return res;
     }
 }

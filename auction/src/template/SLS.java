@@ -65,7 +65,7 @@ public class SLS
 	{
 		System.out.println("Calling SLS with " + this.taskList);
 		List<Assignment> N;
-		Assignment A = init;
+		Assignment A = init.clone();
 		Assignment AOld;
 		for(int i = 0; i < iter && System.currentTimeMillis() - timeStart <= timeout - 1000; i++)
 		{
