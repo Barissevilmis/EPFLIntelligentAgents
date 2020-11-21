@@ -43,6 +43,7 @@ public class SLS
 		//Line below for tests
 		//this.rand = new Random(0);
 	}
+	
 	public Assignment addTaskToSolution(Assignment A, Task t)
 	{
 		Assignment newA = A.clone();
@@ -63,6 +64,9 @@ public class SLS
 	
 	public Assignment SLSAlgorithm(Assignment init, long timeStart, long timeout)
 	{
+		ABest = init.clone();
+		costBest = objective(init);
+		
 		System.out.println("Calling SLS with " + this.taskList);
 		List<Assignment> N;
 		Assignment A = init.clone();
@@ -180,7 +184,7 @@ public class SLS
 		//To save the overall best solution
 		if(costBest > minCost)
 		{
-			ABest = Anew;
+			ABest = Anew.clone();
 			costBest = minCost;
 		}
 		

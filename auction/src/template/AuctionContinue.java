@@ -28,7 +28,7 @@ import logist.topology.Topology.City;
  * 
  */
 @SuppressWarnings("unused")
-public class Auction implements AuctionBehavior {
+public class AuctionContinue implements AuctionBehavior {
 
 	private Topology topology;
 	private TaskDistribution distribution;
@@ -51,6 +51,7 @@ public class Auction implements AuctionBehavior {
 	private SLS sls;
 	private Assignment solution;
 	private Assignment init;
+	private Assignment oldSolution;
 	
 	private final int MIN_BID = 100;
 
@@ -63,7 +64,7 @@ public class Auction implements AuctionBehavior {
 		this.distribution = distribution;
 		this.agent = agent;
 		this.vehicles = agent.vehicles();
-
+		
 		this.cost = 0.0;
 		this.profitRatio = 1.1;
 		this.tasks = new ArrayList<Task>();
@@ -106,7 +107,9 @@ public class Auction implements AuctionBehavior {
 		}
 		else 
 		{
+			solution = oldSolution;
 			this.tasks.remove(tasks.size()-1);
+			System.out.println(this.tasks);
 		}
 	}
 	
@@ -128,12 +131,25 @@ public class Auction implements AuctionBehavior {
 		{
 			return null;
 		}
-
-		this.solution = this.sls.SLSAlgorithm(System.currentTimeMillis(), timeout_bid);
+		
+		oldSolution = solution;
+		
+		if (this.solution != null) 
+		{
+			// Initialize SLS from previous solution
+			this.init = this.sls.addTaskToSolution(this.solution, task);		
+			this.solution = this.sls.SLSAlgorithm(this.init, System.currentTimeMillis(), timeout_bid);
+		}
+		else 
+		{
+			this.solution = this.sls.SLSAlgorithm(System.currentTimeMillis(), timeout_bid);
+		}
+		
 		this.newCost = this.sls.objective(this.solution);
 		this.marginal = this.newCost - this.cost;
 		
-		System.out.println("Tasks: " + this.tasks + "\n");
+		System.out.println("Tasks: " + this.tasks);
+		System.out.println();
 		
 		return (long) Math.max(MIN_BID, this.marginal  * this.profitRatio);
 	}
@@ -145,8 +161,21 @@ public class Auction implements AuctionBehavior {
 		System.out.println("My tasks: " + this.tasks);
 		System.out.println("Total income: " + income);
 		
-		this.sls = new SLS(this.vehicles, tasks);
-		this.solution = this.sls.SLSAlgorithm(System.currentTimeMillis(), this.timeout_plan);
+		this.solution = this.sls.SLSAlgorithm(this.solution, System.currentTimeMillis(), this.timeout_plan);
+		
+		HashMap<Integer, Task> idToTask = new HashMap<Integer, Task>();
+		for (Task task : tasks) {
+			idToTask.put(task.id, task);
+		}
+		
+		for(Vehicle v : vehicles)
+		{
+			for(TaskAction ta :  this.solution.getTaskActions(v))
+			{
+				Task correctTask = idToTask.get(ta.task.id);
+				ta.task = correctTask;
+			}
+		}		
 		
 		double finalCost = this.sls.objective(this.solution);
 		System.out.println("Total cost: " + finalCost);
