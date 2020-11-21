@@ -163,6 +163,18 @@ public class AuctionContinue implements AuctionBehavior {
 		
 		this.solution = this.sls.SLSAlgorithm(this.solution, System.currentTimeMillis(), this.timeout_plan);
 		
+		// Replace tasks with the ones given as argument so Logist is happy
+		replaceTasks(tasks);
+		
+		double finalCost = this.sls.objective(this.solution);
+		System.out.println("Total cost: " + finalCost);
+		System.out.println("Profit: " + (income - finalCost));
+		
+		return convertSolutionToPlans(this.vehicles, this.solution);
+	}
+	
+	
+	public void replaceTasks(TaskSet tasks) {
 		HashMap<Integer, Task> idToTask = new HashMap<Integer, Task>();
 		for (Task task : tasks) {
 			idToTask.put(task.id, task);
@@ -175,13 +187,7 @@ public class AuctionContinue implements AuctionBehavior {
 				Task correctTask = idToTask.get(ta.task.id);
 				ta.task = correctTask;
 			}
-		}		
-		
-		double finalCost = this.sls.objective(this.solution);
-		System.out.println("Total cost: " + finalCost);
-		System.out.println("Profit: " + (income - finalCost));
-		
-		return convertSolutionToPlans(this.vehicles, this.solution);
+		}	
 	}
 	
 	
