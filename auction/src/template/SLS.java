@@ -60,7 +60,10 @@ public class SLS
 		}
 		return newA;
 	}
-	
+	public City prevCity(Task t)
+	{
+		return this.ABest.findCity(t);
+	}
 	
 	public Assignment SLSAlgorithm(Assignment init, long timeStart, long timeout)
 	{
@@ -340,19 +343,22 @@ public class SLS
 			double dist = 0.0;
 			double costPerKm = vehicle.costPerKm();
 			City currentCity = vehicle.homeCity();
-			for(TaskAction ta : A.getTaskActions(vehicle)) 
+			
+			for(TaskAction ta : A.getTaskActions(vehicle))
 			{
 				Task task = ta.task;
 				boolean isPickup = ta.isPickup;
+				double pd = currentCity.distanceTo(task.pickupCity);
+				double dd = currentCity.distanceTo(task.deliveryCity);
 				
 				if (isPickup) 
 				{
-					dist += currentCity.distanceTo(task.pickupCity);
+					dist += pd;
 					currentCity = task.pickupCity;
 				}
 				else
 				{
-					dist += currentCity.distanceTo(task.deliveryCity);
+					dist += dd;
 					currentCity = task.deliveryCity;
 				}
 			}

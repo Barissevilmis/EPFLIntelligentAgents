@@ -44,6 +44,7 @@ public class AuctionTrial implements AuctionBehavior {
 	private Double cost;
 	private Double newCost;
 	private Double marginal;
+	private Integer cpkm;
 	private Double profitRatio;
 	private Double oppRatio;
 	private Double finalBid;
@@ -55,6 +56,7 @@ public class AuctionTrial implements AuctionBehavior {
 	private Assignment init;
 	private Assignment oldSolution;
 	private Double auctionAmount;
+	private List<Integer> winners;
 
 	private HashMap<City, Double> popularityVec;
 	private HashMap<HashMap<City,City>, Double> popularityMat;
@@ -72,9 +74,11 @@ public class AuctionTrial implements AuctionBehavior {
 		this.distribution = distribution;
 		this.agent = agent;
 		this.vehicles = agent.vehicles();
-		
+		this.winners = new ArrayList<Integer>();
+		this.cpkm = this.vehicles.get(0).costPerKm();
+ 		
 		this.cost = 0.0;
-		this.profitRatio = 1.1;
+		this.profitRatio = 1.01;
 		this.auctionAmount = 0.0;
 		this.popularityVec = new HashMap<City,Double>();
 		this.popularityMat = new HashMap<HashMap<City,City>,Double>();
@@ -124,27 +128,22 @@ public class AuctionTrial implements AuctionBehavior {
         }  
         
         //TODO: Sum the popularity vector terms corresponding to the shortest path cities for each task
-        double maxVal = Double.MIN_VALUE;
-        double minVal = Double.MAX_VALUE;
+        double sumVal = 0.0;
         for (City a : topology) 
         {
         	for (City b : topology) 
         	{
         		HashMap<City,City> tmp = new HashMap<City,City>();
         		tmp.put(a, b);
-        		this.popularityMat.put(tmp, 0.0);
+        		if(!this.popularityMat.containsKey(tmp))
+        		{
+        			this.popularityMat.put(tmp, 0.0);
+        		}
         		for(City pt : a.pathTo(b))
 				{
 					this.popularityMat.put(tmp, this.popularityMat.get(tmp)+this.popularityVec.get(pt));
-				}
-        		if(this.popularityMat.get(tmp) > maxVal)
-        		{
-        			maxVal = this.popularityMat.get(tmp);
-        		}
-        		if(this.popularityMat.get(tmp) < minVal)
-        		{
-        			minVal = this.popularityMat.get(tmp);
-        		}
+				}	
+        		sumVal += this.popularityMat.get(tmp);
         		
         	}
         }
@@ -155,7 +154,8 @@ public class AuctionTrial implements AuctionBehavior {
         	{
         		HashMap<City,City> tmp = new HashMap<City,City>();
         		tmp.put(a, b);
-        		this.popularityMat.put(tmp, (this.popularityMat.get(tmp) - minVal) / (maxVal - minVal));
+        		this.popularityMat.put(tmp, (this.popularityMat.get(tmp) / sumVal));
+        		
         	}	
         }
         
@@ -174,11 +174,13 @@ public class AuctionTrial implements AuctionBehavior {
 		{
 			this.cost = this.newCost;
 			this.income += bids[agent.id()];
+			this.winners.add(-1);
 		}
 		else 
 		{
 			this.solution = this.oldSolution;
 			this.tasks.remove(tasks.size()-1);
+			this.winners.add(agent.id());
 		}
 		
 		minBids.add(minBid(bids));
@@ -195,14 +197,14 @@ public class AuctionTrial implements AuctionBehavior {
 		HashMap<City,City> tmp = new HashMap<City,City>();
 		
 		double expected = 0.0;
-		int count = 0;
+		int count = 1;
 		
 		for(City a : topology)
 		{
 			tmp.put(a,task.pickupCity);
 			if(this.popularityMat.containsKey(tmp))
 			{
-				expected += ((1-this.popularityMat.get(tmp))* a.distanceTo(task.pickupCity));
+				expected += (this.popularityMat.get(tmp)) * a.distanceTo(task.pickupCity);
 			}
 			else
 			{
@@ -211,13 +213,21 @@ public class AuctionTrial implements AuctionBehavior {
 			
 			count += 1;
 		}
-		
-		expected = (expected / count) + task.pickupCity.distanceTo(task.deliveryCity);
-		
 		tmp.clear();
-		tmp.put(task.pickupCity,task.deliveryCity);
-		this.tasks.add(task);
+		tmp.put(task.pickupCity, task.deliveryCity);
+		if(this.popularityMat.containsKey(tmp))
+		{
+			expected += (this.popularityMat.get(tmp)) * task.pickupCity.distanceTo(task.deliveryCity);
+		}
+		else
+		{
+			expected += task.pickupCity.distanceTo(task.deliveryCity);
+		}
 		
+		expected =  (expected / count);
+		tmp.clear();
+		
+		this.tasks.add(task);
 		int cnt = 0;
 		for(Vehicle veh : this.vehicles)
 		{		
@@ -247,29 +257,29 @@ public class AuctionTrial implements AuctionBehavior {
 		
 		this.newCost = this.sls.objective(this.solution);
 		this.marginal = this.newCost - this.cost;
-		City prevCity = this.sls.prevCity(task);
-		Double ddist = prevCity.distanceTo(task.pickupCity) + task.pickupCity.distanceTo(task.deliveryCity);
+		System.out.println("YRRK "+this.newCost);
+		System.out.println("YRRK2 "+this.cost);
+		//City prevCity = this.sls.prevCity(task);
+		//Double ddist = prevCity.distanceTo(task.pickupCity) + task.pickupCity.distanceTo(task.deliveryCity);
 	
 		if(this.auctionAmount > 1)	
 		{
 			Double oppRatio;
-			if(this.tasks.size()/this.auctionAmount < 0.5)
+			if(this.winners.get(this.winners.size()-1) == -1)
 			{
-				oppRatio = (minBids.get(minBids.size()-1) / expected)*0.9;
+				this.profitRatio *= 1.1;
 			}
 			else
 			{
-				oppRatio = (minBids.get(minBids.size()-1) / expected)*1.1;
+				this.profitRatio = Math.max(1.01, (this.minBids.get(this.minBids.size()-1) / (cpkm*expected))*0.99);
+				
 			}
-			this.profitRatio = Math.max(1.01, oppRatio*ddist/this.marginal);
 		}
 		
-		this.finalBid = this.marginal * this.profitRatio;
+		System.out.println(this.profitRatio);
+		this.finalBid = this.marginal <= 0 ? cpkm * task.pickupCity.distanceTo(task.deliveryCity) : this.marginal * this.profitRatio;
 		
-		System.out.println("Tasks: " + this.tasks);
-		
-
-		return (long) Math.max(MIN_BID, this.finalBid);
+		return this.finalBid.longValue();
 	}
 	
 	
@@ -311,7 +321,7 @@ public class AuctionTrial implements AuctionBehavior {
 		}
 		return res;
 	}
-	
+
 	public void replaceTasks(TaskSet tasks) {
 		HashMap<Integer, Task> idToTask = new HashMap<Integer, Task>();
 		for (Task task : tasks) {

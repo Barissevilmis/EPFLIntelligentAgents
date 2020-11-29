@@ -53,6 +53,8 @@ public class AuctionContinue implements AuctionBehavior {
 	private Assignment init;
 	private Assignment oldSolution;
 	
+	private HashMap<City, Double> popularityArr;
+	
 	private final int MIN_BID = 100;
 
 	
@@ -67,6 +69,7 @@ public class AuctionContinue implements AuctionBehavior {
 		
 		this.cost = 0.0;
 		this.profitRatio = 1.1;
+		this.popularityArr = new HashMap<City,Double>();
 		this.tasks = new ArrayList<Task>();
 		this.sls = new SLS(this.vehicles, this.tasks);
 		
@@ -89,6 +92,18 @@ public class AuctionContinue implements AuctionBehavior {
         this.timeout_bid = ls.get(LogistSettings.TimeoutKey.BID);
         
         income = 0L;
+        
+        for (City a : topology) 
+        {
+        	double tmp = 0.0;
+        	for (City b : topology) 
+        	{     
+        		tmp += this.distribution.probability(b, a);
+        		
+        	}
+        	this.popularityArr.put(a, tmp);
+        }
+        
 	}
 
 	
@@ -145,13 +160,18 @@ public class AuctionContinue implements AuctionBehavior {
 			this.solution = this.sls.SLSAlgorithm(System.currentTimeMillis(), timeout_bid);
 		}
 		
+//
 		this.newCost = this.sls.objective(this.solution);
 		this.marginal = this.newCost - this.cost;
 		
+		System.out.println("YRRK3 "+this.newCost);
+		System.out.println("YRRK4 "+this.cost);
+		System.out.println("YRRK5 "+task.pickupCity.distanceTo(task.deliveryCity) * vehicles.get(0).costPerKm());
+
 		System.out.println("Tasks: " + this.tasks);
 		System.out.println();
 		
-		return (long) Math.max(MIN_BID, this.marginal  * this.profitRatio);
+		return (long) Math.max(MIN_BID, this.marginal * this.profitRatio);
 	}
 	
 
@@ -160,6 +180,14 @@ public class AuctionContinue implements AuctionBehavior {
 		System.out.println("Agent " + agent.id() + " has tasks " + tasks);
 		System.out.println("My tasks: " + this.tasks);
 		System.out.println("Total income: " + income);
+		
+		if (this.solution == null) { 
+			List<Plan> plans = new ArrayList<Plan>();
+			while (plans.size() < vehicles.size())
+				plans.add(Plan.EMPTY);
+
+			return plans;
+		}
 		
 		this.solution = this.sls.SLSAlgorithm(this.solution, System.currentTimeMillis(), this.timeout_plan);
 		

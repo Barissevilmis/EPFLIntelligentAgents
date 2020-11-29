@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Set;
 
 import logist.simulation.Vehicle;
+import logist.task.Task;
+import logist.topology.Topology.City;
 
 public class Assignment 
 {
@@ -33,7 +35,28 @@ public class Assignment
 		return null;
 		
 	}
-	
+	public City findCity(Task t)
+	{
+		boolean val = false;
+		for(Vehicle v : this.vehicleActionList.keySet())
+		{
+			TaskAction prevT = null;
+			for(TaskAction ta: this.vehicleActionList.get(v))
+			{
+				if(ta.task == t && prevT != null)
+				{
+					return prevT.isPickup ? prevT.task.pickupCity : prevT.task.deliveryCity;
+				}
+				else if(ta.task == t && prevT == null)
+				{
+					return v.getCurrentCity();
+				}
+				
+				prevT = ta;
+			}
+		}
+		return null;
+	}
 	public List<Vehicle> getVehiclesWithTask() 
 	{
 		List<Vehicle> veh = new ArrayList<Vehicle>();

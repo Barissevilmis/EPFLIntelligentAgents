@@ -19,4 +19,14 @@
 		<set class-name="template.AuctionContinue"/>
 	</agent>
 	
+	<agent name="auction-tr">
+		<set class-path="bin/"/>
+		<set class-name="template.AuctionTrial"/>
+	</agent>
+	
+	<agent name="auction-tdpr">
+		<set class-path="bin/"/>
+		<set class-name="template.AuctionTDPR"/>
+	</agent>
+	
 </agents>
